@@ -5,10 +5,21 @@ export default class Esporte {
     
   //-----------------------------------------------------------------------------------------//
 
-  constructor(nome) {
+  constructor(id, nome) {
+    this.setId(id);
     this.setNome(nome);
+    this.comunicacoes = [];
   }
 
+  getId() {
+    return this.id;
+  }
+
+  setId(id) {
+    Esporte.validarId(id);
+    this.id = id;
+  }
+  
   //-----------------------------------------------------------------------------------------//
 
   getNome() {
@@ -22,16 +33,31 @@ export default class Esporte {
     this.nome = nome;
   }
   
+   addComunicacao(comunicacao) {
+    if (!comunicacao) throw new ModelError("Comunicação inválida!");
+    this.comunicacoes.push(comunicacao);
+  }
+
+  getComunicacoes() {
+    return this.comunicacoes;
+  }
+  
+
+  
 
   //-----------------------------------------------------------------------------------------//
+  
+  static validarId(id) {
+     if (id !== null && typeof id !== "string") {
+      throw new ModelError("ID deve ser uma string ou null");
+    }
+  }
 
   static validarNome(nome) {
     if(nome == null || nome == "" || nome == undefined)
       throw new ModelError("O nome do Esporte não pode ser nulo!");
     if(typeof nome !== "string")
       throw new ModelError("O nome do Esporte precisa ser uma String!");
-    if(nome.length != 25)
-      throw new ModelError("O nome precisa ser uma String com 25 caracteres!");
     for (let i = 0; i < nome.length; i++) {
         let c = nome.codePointAt(i);
         if ((c < 65 || c > 90) && (c != 32)) 
@@ -40,11 +66,18 @@ export default class Esporte {
   }
 
   //-----------------------------------------------------------------------------------------//
-   
-  mostrar() {
-    let texto = "Sigla: " + this.nome;
-      
-    alert(texto);
-    alert(JSON.stringify(this));
+  
+  toFirestore() {
+    return {
+      id: this.id,
+      nome: this.nome,
+      comunicacoes: this.comunicacoes // Armazena apenas os IDs
+    };
   }
+   
+  toString() {
+    return `Esporte: ${this.nome} (${this.comunicacoes.length} comunicações)`;
+  }
+  
+  
 }
