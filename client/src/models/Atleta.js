@@ -1,5 +1,5 @@
 import Usuario from "./Usuario.js";
-import ModelError from "/model/ModelError.js";
+import ModelError from "./ModelError.js";
 
 export class Atleta extends Usuario {
   constructor(id, nome, email) {

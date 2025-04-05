@@ -1,5 +1,5 @@
-import Usuario from "/model/Usuario.js";
-import ModelError from "/model/ModelError.js";
+import Usuario from "./Usuario.js";
+import ModelError from "./ModelError.js";
 
 class Admin extends Usuario {
   constructor(id, nome, email) {
