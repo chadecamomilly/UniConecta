@@ -2,19 +2,30 @@ import Usuario from "./Usuario.js";
 import ModelError from "./ModelError.js";
 
 export class Atleta extends Usuario {
-  constructor(id, nome, email) {
+  constructor(id, nome, email, esportes = [], foto = null) {
     super(id, nome, email, "atleta");
-    this.esportes = []; 
+    this.esportes = esportes;
   }
 
-  participarEsporte(esporte) {
-    if (!esporte || !esporte.nome) {
-      throw new ModelError("Esporte inválido.");
+  participarEsporte(idEsporte) {
+    if (!idEsporte || typeof idEsporte !== "string") {
+      throw new ModelError("ID do esporte inválido.");
     }
-    this.esportes.push(esporte); 
+
+    if (!this.esportes.includes(idEsporte)) {
+      this.esportes.push(idEsporte);
+    } else {
+      throw new ModelError("Usuário já participa desse esporte.");
+    }
   }
 
   getEsportes() {
     return this.esportes;
   }
+
+  removerEsporte(idEsporte) {
+    this.esportes = this.esportes.filter(id => id !== idEsporte);
+  }
 }
+
+export default Atleta;

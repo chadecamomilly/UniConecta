@@ -24,7 +24,7 @@ export default function Cadastro() {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
     
-            navigate("/escolher-tipo", { state: { user } });
+            navigate("/escolher-tipo");
     
         } catch (error) {
             alert("Erro ao fazer login com Google: " + error.message);
@@ -42,7 +42,7 @@ export default function Cadastro() {
             await set(ref(db, 'usuarios/' + user.uid), novoUsuario);
 
             alert("Usuário registrado com sucesso!");
-            navigate("/home");
+            navigate("/");
         } catch (error) {
             alert("Erro ao registrar: " + error.message);
         }

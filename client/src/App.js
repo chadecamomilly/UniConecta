@@ -5,6 +5,9 @@ import Cadastro from './pages/Cadastro';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import EscolherTipo from './pages/EscolherTipo';
+import Perfil from "./pages/Perfil";
+import Configuracoes from "./pages/Configuracoes";
+import Esportes from "./pages/Esportes";
 
 
 function App() {
@@ -13,8 +16,11 @@ function App() {
       <Routes>
         <Route path="/cadastro" element={<Cadastro />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/home" element={<Home />} />
+        <Route path="/" element={<Home />} />
         <Route path="/escolher-tipo" element={<EscolherTipo />} />
+        <Route path="/perfil" element={<Perfil />} />
+        <Route path="/configuracoes" element={<Configuracoes />} />
+        <Route path="/esportes" element={<Esportes />} />
       </Routes>
     </BrowserRouter>
   );

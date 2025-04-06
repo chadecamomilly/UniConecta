@@ -1,13 +1,14 @@
 import ModelError from "./ModelError.js";
 
 export default class Usuario {
-  constructor(id, nome, email, tipo) {
-    this.setId(id);    
-    this.setNome(nome); 
-    this.setEmail(email); 
-    this.setTipo(tipo); 
+  constructor(id, nome, email, tipo, esportes) {
+    this.setId(id);
+    this.setNome(nome);
+    this.setEmail(email);
+    this.setTipo(tipo);
+    this.setEsportes(esportes);
   }
-  
+
   getId() {
     return this.id;
   }
@@ -43,8 +44,17 @@ export default class Usuario {
     Usuario.validarTipo(tipo);
     this.tipo = tipo;
   }
-  
-   static validarId(id) {
+
+  getEsportes() {
+    return this.esportes;
+  }
+
+  setEsportes(esportes) {
+    Usuario.validarEsportes(esportes);
+    this.esportes = esportes;
+  }
+
+  static validarId(id) {
     if (!id || typeof id !== "string") {
       throw new ModelError("ID inválido: deve ser uma string não vazia.");
     }
@@ -69,16 +79,23 @@ export default class Usuario {
       throw new ModelError(`Tipo inválido: use ${tiposValidos.join(" ou ")}.`);
     }
   }
-  
-   toFirestore() {
+
+  static validarEsportes(esportes) {
+    if (!Array.isArray(esportes)) {
+      throw new Error("Esportes deve ser um array de IDs de esportes.");
+    }
+  }
+
+  toFirestore() {
     return {
       id: this.id,
       nome: this.nome,
       email: this.email,
       tipo: this.tipo,
+      esportes: this.esportes,
     };
   }
-  
+
   toString() {
     return `[${this.tipo.toUpperCase()}] ${this.nome} (${this.email})`;
   }

@@ -25,7 +25,7 @@ export default function Login() {
             if (snapshot.exists()) {
                 const usuario = snapshot.val();
                 alert(`Bem-vindo(a), ${usuario.nome || "usuário"}!`);
-                navigate("/home");
+                navigate("/");
             } else {
                 alert("Usuário não encontrado no banco de dados.");
             }
@@ -41,7 +41,7 @@ export default function Login() {
             const user = result.user;
             alert(`Login com Google feito! Bem-vindo, ${user.displayName}`);
             // Redirecionar se quiser
-            navigate("/timeline");
+            navigate("/");
         } catch (error) {
             alert("Erro no login com Google: " + error.message);
         }
