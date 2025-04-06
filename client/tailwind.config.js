@@ -10,10 +10,14 @@ module.exports = {
         'xs': '475px',
       },
       colors: {
-        'main-azul': '#1fb6ff',
+          uniblue: {
+          DEFAULT: '#0A0F2E',     // Azul escuro customizado
+          light: '#1C234D',       // Versão mais clara
+          dark: '#050817',        // Ainda mais escura
+        }
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Montserrat', 'sans-serif'],
       },
       spacing: {
         '128': '32rem',

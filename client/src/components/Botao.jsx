@@ -1,22 +1,10 @@
-import React from 'react';
-
-const Button = ({ children }) => {
+export default function Button({ children, ...props }) {
   return (
-    <button className="
-      bg-blue-500 
-      hover:bg-blue-700 
-      text-white 
-      font-bold 
-      py-2 px-4 
-      rounded 
-      transition-colors
-      duration-200
-      shadow-md
-      hover:shadow-lg
-    ">
+    <button
+      {...props}
+      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-5 rounded-lg text-sm focus:outline-none focus:ring-4 focus:ring-blue-300 transition"
+    >
       {children}
     </button>
   );
-};
-  
-  export default Button;
+}

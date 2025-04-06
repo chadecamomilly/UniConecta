@@ -2,10 +2,10 @@ import ModelError from "./ModelError.js";
 
 export default class Usuario {
   constructor(id, nome, email, tipo) {
-    this.setId(id);    // Agora valida o ID
-    this.setNome(nome); // Valida o nome
-    this.setEmail(email); // Valida o e-mail
-    this.setTipo(tipo); // Valida o tipo
+    this.setId(id);    
+    this.setNome(nome); 
+    this.setEmail(email); 
+    this.setTipo(tipo); 
   }
   
   getId() {
@@ -64,7 +64,7 @@ export default class Usuario {
   }
 
   static validarTipo(tipo) {
-    const tiposValidos = ["admin", "atleta"];
+    const tiposValidos = ["admin", "atleta", "responsavel"];
     if (!tiposValidos.includes(tipo)) {
       throw new ModelError(`Tipo inválido: use ${tiposValidos.join(" ou ")}.`);
     }

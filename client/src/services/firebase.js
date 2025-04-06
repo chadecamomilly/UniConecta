@@ -1,6 +1,6 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-import { getDatabase } from 'https://camomilly-lasalle-firebase-default-rtdb.firebaseio.com/';
-
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getDatabase } from "firebase/database";
 // 
 // Configuração do projeto no firebase
 //
@@ -18,7 +18,9 @@ const firebaseConfig = {
 // Chama a função initializeApp do firebase (ver o import acima)
 let app = initializeApp(firebaseConfig);
 export const db = getDatabase(app);
+const auth = getAuth(app);
 
 
 // Retorna o objeto app gerado pelo firebase
 export default app;
+export { auth };
