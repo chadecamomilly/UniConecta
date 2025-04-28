@@ -8,6 +8,7 @@ import EscolherTipo from './pages/EscolherTipo';
 import Perfil from "./pages/Perfil";
 import Configuracoes from "./pages/Configuracoes";
 import Esportes from "./pages/Esportes";
+import NovaPublicacao from './pages/NovaPublicacao';
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/configuracoes" element={<Configuracoes />} />
         <Route path="/esportes" element={<Esportes />} />
+        <Route path="/nova-publicacao" element={<NovaPublicacao />} /> 
       </Routes>
     </BrowserRouter>
   );

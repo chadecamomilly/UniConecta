@@ -7,12 +7,12 @@ export default class Comunicacao {
     this.setConteudo(conteudo);
     this.setAutor(autor);
     this.setEsportes(esportes);
-    this.dataCriacao = new Date();
+    this.dataCriacao = new Date().toISOString();
   }
-  
+
   //-------------------------------GETTERS E SETTERS----------------------------------------------------------//
-  
-   getId() { return this.id; }
+
+  getId() { return this.id; }
 
   setId(id) {
     Comunicacao.validarId(id);
@@ -41,14 +41,14 @@ export default class Comunicacao {
   }
 
   getEsportes() { return [...this.esportes]; }
-  
+
   setEsportes(esportes) {
     Comunicacao.validarEsportes(esportes);
     this.esportes = esportes.map(esporte => ({ id: esporte.id, nome: esporte.nome }));
   }
-  
+
   //---------------------------------------VALIDACOES--------------------------------------------------//
-  
+
   static validarId(id) {
     if (id !== null && typeof id !== "string") {
       throw new ModelError("ID deve ser string ou null");
@@ -101,34 +101,34 @@ export default class Comunicacao {
       }
     });
   }
-  
+
   //----------------------------------------FIREBASE-------------------------------------------------//
-  
-  toFirestore() {
+
+  // Método para adaptar a classe para o Realtime Database
+  toRealtimeDatabase() {
     return {
       titulo: this.titulo,
       conteudo: this.conteudo,
       autor: this.autor,
       esportes: this.esportes,
-      dataCriacao: this.dataCriacao
+      dataCriacao: this.dataCriacao // Data no formato ISO
     };
   }
-  
-  static fromFirestore(doc) {
-    const data = doc.data();
+
+  static fromRealtimeDatabase(data) {
     return new Comunicacao(
-      doc.id,
+      data.id,
       data.titulo,
       data.conteudo,
       data.autor,
       data.esportes
     );
   }
-  
+
   //----------------------------------------RETORNO-------------------------------------------------//
-  
+
   toString() {
-  const esportesStr = this.esportes.map(e => e.nome).join(", ");
-  return `[${this.dataCriacao.toLocaleString()}] ${this.titulo}\nAutor: ${this.autor.nome}\nEsportes: ${esportesStr}`;
-}
+    const esportesStr = this.esportes.map(e => e.nome).join(", ");
+    return `[${this.dataCriacao}] ${this.titulo}\nAutor: ${this.autor.nome}\nEsportes: ${esportesStr}`;
+  }
 }

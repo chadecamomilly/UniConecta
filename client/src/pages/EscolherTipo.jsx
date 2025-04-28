@@ -1,52 +1,107 @@
-import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { getDatabase, ref, set } from "firebase/database";
-import app from "../services/firebase";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { getDatabase, ref, set, get } from "firebase/database";
 import { getAuth } from "firebase/auth";
+import app from "../services/firebase";
 
 export default function EscolherTipo() {
-  const [tipo, setTipo] = useState("atleta");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   const db = getDatabase(app);
   const auth = getAuth();
 
-  const location = useLocation();
-  const user = auth.currentUser;
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        navigate("/login");
+        return;
+      }
 
-  const handleSalvarTipo = async () => {
-    if (!user) return alert("Usuário não encontrado!");
-
-    const userRef = ref(db, "usuarios/" + user.uid);
-    await set(userRef, {
-      id: user.uid,
-      nome: user.displayName,
-      email: user.email,
-      tipo: tipo,
+      try {
+        const snapshot = await get(ref(db, `usuarios/${user.uid}`));
+        if (snapshot.exists()) {
+          navigate("/");
+          return;
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error("Erro ao verificar registro:", err);
+        setError("Erro ao verificar seu cadastro");
+        setLoading(false);
+      }
     });
 
-    alert("Tipo de usuário salvo com sucesso!");
-    navigate("/");
+    return () => unsubscribe();
+  }, [auth, navigate, db]);
+
+  const handleCriarContaAtleta = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("Usuário não autenticado");
+
+      // Garante que o usuário está realmente autenticado
+      await user.getIdToken(true);
+      
+      const userData = {
+        id: user.uid,
+        nome: user.displayName || "Novo Atleta",
+        email: user.email,
+        tipo: "ATLETA", // DEVE SER MAIÚSCULO
+        dataCriacao: new Date().toISOString()
+      };
+
+      console.log("Tentando criar conta com:", userData);
+      
+      // Operação de escrita com tratamento robusto
+      await set(ref(db, `usuarios/${user.uid}`), userData);
+      
+      console.log("Conta criada com sucesso!");
+      navigate("/");
+    } catch (err) {
+      console.error("Erro detalhado:", err, err.code, err.message);
+      setError(
+        err.code === "PERMISSION_DENIED"
+          ? "Sem permissão para criar conta. Contate o administrador."
+          : `Erro: ${err.message || "Falha ao criar conta"}`
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#0a0e2a] p-4">
       <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-sm">
-        <h2 className="text-xl text-gray-800 font-bold mb-4">Escolha seu tipo de usuário</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-4">
+          Complete seu cadastro
+        </h2>
 
-        <select
-          value={tipo}
-          onChange={(e) => setTipo(e.target.value)}
-          className="w-full p-2 mb-4 border rounded text-gray-800"
-        >
-          <option value="atleta">Atleta</option>
-          <option value="responsavel">Responsável de esporte</option>
-        </select>
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-center">
+            {error}
+          </div>
+        )}
+
+        <div className="mb-6 text-center">
+          <p className="text-gray-600 mb-2">
+            Você está se cadastrando como <strong className="text-blue-600">Atleta</strong>
+          </p>
+        </div>
 
         <button
-          onClick={handleSalvarTipo}
-          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+          onClick={handleCriarContaAtleta}
+          disabled={loading}
+          className={`w-full py-3 px-4 rounded-md text-white font-medium transition-colors ${
+            loading 
+              ? "bg-gray-400 cursor-not-allowed" 
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
         >
-          Continuar
+          {loading ? "Criando conta..." : "Confirmar Cadastro"}
         </button>
       </div>
     </div>
