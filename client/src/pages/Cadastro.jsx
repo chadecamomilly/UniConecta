@@ -21,7 +21,7 @@ export default function Cadastro() {
             setLoading(true);
             setError("");
             await signInWithPopup(auth, provider);
-            navigate("/escolher-tipo"); // Redireciona para definir tipo após autenticação
+            navigate("/escolher-tipo"); 
         } catch (error) {
             setError("Erro ao fazer login com Google: " + error.message);
         } finally {
@@ -35,7 +35,7 @@ export default function Cadastro() {
             setLoading(true);
             setError("");
             await createUserWithEmailAndPassword(auth, email, password);
-            navigate("/escolher-tipo"); // Redireciona para definir tipo após cadastro
+            navigate("/escolher-tipo"); 
         } catch (error) {
             setError("Erro ao registrar: " + error.message);
         } finally {

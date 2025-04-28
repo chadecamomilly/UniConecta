@@ -2,10 +2,13 @@ import { Link } from 'react-router-dom';
 import { useEffect, useState } from "react";
 import { db } from "../services/firebase";
 import { ref, get, orderByChild, query } from "firebase/database";
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Publicacoes() {
   const [publicacoes, setPublicacoes] = useState([]);
   const [carregando, setCarregando] = useState(true);
+  const { user } = useAuth();
+  
 
   useEffect(() => {
     const fetchPublicacoes = async () => {
@@ -17,7 +20,6 @@ export default function Publicacoes() {
         if (snapshot.exists()) {
           const data = snapshot.val();
 
-          // Converter para array e ordenar por data decrescente
           const publicacoesArray = Object.keys(data).map((id) => ({
             id,
             ...data[id],
@@ -42,15 +44,19 @@ export default function Publicacoes() {
     return <div className="text-center text-white-800">Carregando publicações...</div>;
   }
 
+
   return (
     <div className="text-center text-white-800">
       <h1 className="text-2xl font-bold mb-4">Publicações</h1>
-      <Link
-        to="/nova-publicacao"
-        className="inline-block px-4 py-2 mt-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-      >
-        Criar Nova Publicação
-      </Link>
+      {user?.tipo === 'ADMIN' || user?.tipo === 'RESPONSAVEL' ? (
+        <Link
+          to="/nova-publicacao"
+          className="inline-block px-4 py-2 mt-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Criar Nova Publicação
+        </Link>
+      ): null}
+
 
       {publicacoes.length === 0 ? (
         <p className="mt-8">Não há publicações para exibir.</p>

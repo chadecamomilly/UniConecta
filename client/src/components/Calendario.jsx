@@ -4,6 +4,7 @@ import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { ref, set, get, remove } from 'firebase/database';
 import { db } from '../services/firebase';
+import { useAuth } from '../contexts/AuthContext';
 
 moment.locale('pt-BR');
 const localizer = momentLocalizer(moment);
@@ -15,6 +16,7 @@ export default function CalendarioAdmin() {
   const [view, setView] = useState(Views.MONTH);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user } = useAuth(); 
 
   // Carrega eventos do Firebase
   useEffect(() => {
@@ -128,21 +130,25 @@ export default function CalendarioAdmin() {
       {events.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-[calc(100%-80px)]">
           <p className="text-lg mb-4">Nenhum evento cadastrado ainda</p>
-          <button
-            onClick={() => {
-              setCurrentEvent({
-                start: new Date(),
-                end: new Date(),
-                title: '',
-                descricao: '',
-                local: ''
-              });
-              setShowModal(true);
-            }}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Criar Primeiro Evento
-          </button>
+
+          {user?.tipo && user.tipo !== 'ATLETA' && (
+            <button
+              onClick={() => {
+                setCurrentEvent({
+                  start: new Date(),
+                  end: new Date(),
+                  title: '',
+                  descricao: '',
+                  local: ''
+                });
+                setShowModal(true);
+              }}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Criar Primeiro Evento
+            </button>
+          )}
+
         </div>
       ) : (
         <>
