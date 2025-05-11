@@ -2,9 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { ref, set, get, remove } from 'firebase/database';
-import { db } from '../services/firebase';
-import { useAuth } from '../contexts/AuthContext';
+import { buscarEventos, salvarEvento, excluirEvento } from '../../controllers/eventoController';
+import { useAuth } from '../../contexts/AuthContext';
 
 moment.locale('pt-BR');
 const localizer = momentLocalizer(moment);
@@ -16,37 +15,23 @@ export default function CalendarioAdmin() {
   const [view, setView] = useState(Views.MONTH);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { user } = useAuth(); 
+  const { user } = useAuth();
 
-  // Carrega eventos do Firebase
+  // Carrega eventos
   useEffect(() => {
-    const fetchEvents = async () => {
+    const carregarEventos = async () => {
       try {
-        const eventosRef = ref(db, 'eventos');
-        const snapshot = await get(eventosRef);
-
-        if (snapshot.exists()) {
-          const eventosData = snapshot.val();
-          const eventosArray = Object.keys(eventosData).map(id => ({
-            id,
-            ...eventosData[id],
-            start: new Date(eventosData[id].start),
-            end: new Date(eventosData[id].end)
-          }));
-          setEvents(eventosArray);
-        } else {
-          // Caso não exista nenhum evento
-          setEvents([]);
-        }
+        const eventos = await buscarEventos();
+        setEvents(eventos);
       } catch (err) {
-        console.error("Erro ao carregar eventos:", err);
         setError("Erro ao carregar eventos");
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchEvents();
+    carregarEventos();
   }, []);
 
   // Manipuladores de eventos
@@ -67,39 +52,27 @@ export default function CalendarioAdmin() {
   }, []);
 
   const handleSaveEvent = async () => {
-    const eventosRef = currentEvent.id
-      ? ref(db, `eventos/${currentEvent.id}`)
-      : ref(db, 'eventos').push();
-
-    await set(eventosRef, {
-      title: currentEvent.title,
-      descricao: currentEvent.descricao,
-      local: currentEvent.local,
-      start: currentEvent.start.toISOString(),
-      end: currentEvent.end.toISOString()
-    });
-
-    setShowModal(false);
-    // Recarrega eventos
-    const snapshot = await get(ref(db, 'eventos'));
-    if (snapshot.exists()) {
-      const eventosData = snapshot.val();
-      const eventosArray = Object.keys(eventosData).map(id => ({
-        id,
-        ...eventosData[id],
-        start: new Date(eventosData[id].start),
-        end: new Date(eventosData[id].end)
-      }));
-      setEvents(eventosArray);
+    try {
+      await salvarEvento(currentEvent);
+      const eventosAtualizados = await buscarEventos();
+      setEvents(eventosAtualizados);
+      setShowModal(false);
+    } catch (error) {
+      setError("Erro ao salvar evento");
+      console.error(error);
     }
   };
 
   const handleDeleteEvent = async () => {
-    if (currentEvent.id) {
-      await remove(ref(db, `eventos/${currentEvent.id}`));
-      setShowModal(false);
-      // Atualiza a lista de eventos após exclusão
-      setEvents(events.filter(event => event.id !== currentEvent.id));
+    try {
+      if (currentEvent.id) {
+        await excluirEvento(currentEvent.id);
+        setEvents(events.filter(event => event.id !== currentEvent.id));
+        setShowModal(false);
+      }
+    } catch (error) {
+      setError("Erro ao excluir evento");
+      console.error(error);
     }
   };
 
@@ -148,7 +121,6 @@ export default function CalendarioAdmin() {
               Criar Primeiro Evento
             </button>
           )}
-
         </div>
       ) : (
         <>

@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { UserCircle, Settings } from 'lucide-react';
-import logo from '../assets/logoUniConecta.png';
+import logo from '../../assets/logoUniConecta.png';
 
 
 export default function Cabecalho() {

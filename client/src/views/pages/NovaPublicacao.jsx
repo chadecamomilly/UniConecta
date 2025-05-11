@@ -1,62 +1,53 @@
 import { useState, useEffect } from "react";
-import { db, auth } from "../services/firebase";
-import { push, ref, get } from "firebase/database"; // Importando funções para ler dados do Realtime Database
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import Comunicacao from "../models/Comunicacao";
+import { buscarEsportes, criarPublicacao } from "../../controllers/publicacaoController";
+import Comunicacao from "../../models/Comunicacao";
 import Header from "../components/Header";
+import { auth } from "../../services/firebase";
 
 export default function NovaPublicacao() {
     const [titulo, setTitulo] = useState("");
     const [conteudo, setConteudo] = useState("");
     const [esportesSelecionados, setEsportesSelecionados] = useState([]);
-    const [userId, setUserId] = useState(null); // Armazenar o ID do usuário
-    const [userName, setUserName] = useState(""); // Armazenar o nome do usuário
-    const [esportes, setEsportes] = useState([]); // Estado para armazenar a lista de esportes
+    const [userId, setUserId] = useState(null);
+    const [userName, setUserName] = useState("");
+    const [esportes, setEsportes] = useState([]);
 
     const handleToggleEsporte = (esporteId) => {
         setEsportesSelecionados(prev => 
-          prev.includes(esporteId)
-            ? prev.filter(id => id !== esporteId)
-            : [...prev, esporteId]
+            prev.includes(esporteId)
+                ? prev.filter(id => id !== esporteId)
+                : [...prev, esporteId]
         );
-      };
+    };
 
-
+    // Carrega lista de esportes
     useEffect(() => {
-        const fetchEsportes = async () => {
-            const esportesRef = ref(db, "esportes"); 
-            const snapshot = await get(esportesRef);
-            if (snapshot.exists()) {
-                const esportes = snapshot.val();
-                const esportesArray = Object.keys(esportes).map((id) => ({
-                    id,
-                    nome: esportes[id].nome,
-                }));
-                setEsportes(esportesArray);
+        const carregarEsportes = async () => {
+            try {
+                const esportes = await buscarEsportes();
+                setEsportes(esportes);
+            } catch (error) {
+                console.error("Erro ao carregar esportes:", error);
+                alert("Erro ao carregar lista de esportes");
             }
         };
-
-        fetchEsportes();
+        carregarEsportes();
     }, []);
 
-    // Monitorando o estado do usuário autenticado
+    // Monitora estado de autenticação
     useEffect(() => {
-        const auth = getAuth();
-        onAuthStateChanged(auth, (user) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                setUserId(user.uid); // Definindo o ID do usuário
-                setUserName(user.displayName || "Usuário"); 
+                setUserId(user.uid);
+                setUserName(user.displayName || "Usuário");
             } else {
-                // Usuário não autenticado
                 setUserId(null);
                 setUserName("");
             }
         });
+        return () => unsubscribe();
     }, []);
-
-    const handleSelectEsportes = (e) => {
-        setEsportesSelecionados([...e.target.selectedOptions].map(o => o.value));
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -67,7 +58,7 @@ export default function NovaPublicacao() {
         }
 
         try {
-            const autor = { id: userId, nome: userName }; // Agora temos o ID e nome do usuário
+            const autor = { id: userId, nome: userName };
             const esportesSelecionadosList = esportes.filter(e => esportesSelecionados.includes(e.id));
 
             const novaPublicacao = new Comunicacao(
@@ -78,15 +69,9 @@ export default function NovaPublicacao() {
                 esportesSelecionadosList
             );
 
-            const dadosParaSalvar = novaPublicacao.toRealtimeDatabase(); // Método alterado para trabalhar com Realtime Database
+            await criarPublicacao(novaPublicacao.toRealtimeDatabase());
 
-            // Referência para a coleção 'publicacoes' no Realtime Database
-            const publicacoesRef = ref(db, "publicacoes");
-
-            // Adicionando uma nova publicação com uma chave única gerada automaticamente
-            await push(publicacoesRef, dadosParaSalvar);
-
-            // Limpa os campos do formulário após o envio
+            // Limpa o formulário
             setTitulo("");
             setConteudo("");
             setEsportesSelecionados([]);
@@ -97,7 +82,6 @@ export default function NovaPublicacao() {
             alert("Erro ao criar publicação: " + erro.message);
         }
     };
-
 
     return (
         <div className="min-h-screen flex flex-col bg-[#0a0e2a] text-white">

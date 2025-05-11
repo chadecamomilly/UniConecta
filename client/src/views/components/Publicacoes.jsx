@@ -1,62 +1,44 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from "react";
-import { db } from "../services/firebase";
-import { ref, get, orderByChild, query } from "firebase/database";
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { buscarPublicacoes } from '../../controllers/publicacaoController';
 
 export default function Publicacoes() {
   const [publicacoes, setPublicacoes] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const { user } = useAuth();
-  
 
   useEffect(() => {
-    const fetchPublicacoes = async () => {
-      const publicacoesRef = ref(db, "publicacoes");
-      const queryRef = query(publicacoesRef, orderByChild("dataCriacao"));
-
+    const carregar = async () => {
       try {
-        const snapshot = await get(queryRef);
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-
-          const publicacoesArray = Object.keys(data).map((id) => ({
-            id,
-            ...data[id],
-            autorNome: data[id].autor?.nome || "Anônimo"
-          })).sort((a, b) => new Date(b.dataCriacao) - new Date(a.dataCriacao));
-
-          setPublicacoes(publicacoesArray);
-        } else {
-          console.log("Nenhuma publicação encontrada!");
-        }
+        const dados = await buscarPublicacoes();
+        setPublicacoes(dados);
       } catch (erro) {
-        console.error("Erro ao buscar publicações: ", erro);
+        console.error(erro);
       } finally {
         setCarregando(false);
       }
     };
 
-    fetchPublicacoes();
+    carregar();
   }, []);
 
   if (carregando) {
     return <div className="text-center text-white-800">Carregando publicações...</div>;
   }
 
-
   return (
     <div className="text-center text-white-800">
       <h1 className="text-2xl font-bold mb-4">Publicações</h1>
-      {user?.tipo === 'ADMIN' || user?.tipo === 'RESPONSAVEL' ? (
+
+      {(user?.tipo === 'ADMIN' || user?.tipo === 'RESPONSAVEL') && (
         <Link
           to="/nova-publicacao"
           className="inline-block px-4 py-2 mt-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           Criar Nova Publicação
         </Link>
-      ): null}
-
+      )}
 
       {publicacoes.length === 0 ? (
         <p className="mt-8">Não há publicações para exibir.</p>

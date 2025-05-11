@@ -1,15 +1,13 @@
 import { useState } from "react";
-import { getAuth, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import app from "../services/firebase";
+import app from "../../services/firebase";
 import Box from "../components/Box";
 import Botao from "../components/Botao";
 import PgCentralizada from "../components/PgCentralizada";
+import { registrarUsuarioComEmail, loginComGoogle } from "../../controllers/authController";
 
 export default function Cadastro() {
-    const auth = getAuth(app);
     const navigate = useNavigate();
-    const provider = new GoogleAuthProvider();
     const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -20,8 +18,8 @@ export default function Cadastro() {
         try {
             setLoading(true);
             setError("");
-            await signInWithPopup(auth, provider);
-            navigate("/escolher-tipo"); 
+            await loginComGoogle();
+            navigate("/escolher-tipo");
         } catch (error) {
             setError("Erro ao fazer login com Google: " + error.message);
         } finally {
@@ -34,8 +32,8 @@ export default function Cadastro() {
         try {
             setLoading(true);
             setError("");
-            await createUserWithEmailAndPassword(auth, email, password);
-            navigate("/escolher-tipo"); 
+            await registrarUsuarioComEmail(email, password);
+            navigate("/escolher-tipo");
         } catch (error) {
             setError("Erro ao registrar: " + error.message);
         } finally {
@@ -68,7 +66,6 @@ export default function Cadastro() {
                             disabled={loading}
                         />
                     </div>
-                    
                     <div className="mb-5">
                         <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                             Seu email
@@ -84,7 +81,6 @@ export default function Cadastro() {
                             disabled={loading}
                         />
                     </div>
-
                     <div className="mb-5">
                         <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                             Sua senha

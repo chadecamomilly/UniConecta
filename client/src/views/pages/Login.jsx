@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { getDatabase, ref, get } from "firebase/database";
 import { useNavigate } from "react-router-dom";
-import app from "../services/firebase";
+import { loginComEmailESenha, loginComGoogle } from "../../controllers/authController";
+import app from "../../services/firebase";
 import Box from "../components/Box";
 import Botao from "../components/Botao";
 import PgCentralizada from "../components/PgCentralizada";
@@ -10,37 +9,23 @@ import PgCentralizada from "../components/PgCentralizada";
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const auth = getAuth(app);
-    const db = getDatabase(app);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const uid = userCredential.user.uid;
-
-            const userRef = ref(db, "usuarios/" + uid);
-            const snapshot = await get(userRef);
-            if (snapshot.exists()) {
-                const usuario = snapshot.val();
-                alert(`Bem-vindo(a), ${usuario.nome || "usuário"}!`);
-                navigate("/");
-            } else {
-                alert("Usuário não encontrado no banco de dados.");
-            }
+            const { user, userData } = await loginComEmailESenha(email, password);
+            alert(`Bem-vindo(a), ${userData.nome || "usuário"}!`);
+            navigate("/");
         } catch (error) {
             alert("Erro ao logar: " + error.message);
         }
     };
 
     const handleGoogleLogin = async () => {
-        const provider = new GoogleAuthProvider();
         try {
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
+            const user = await loginComGoogle();
             alert(`Login com Google feito! Bem-vindo, ${user.displayName}`);
-            // Redirecionar se quiser
             navigate("/");
         } catch (error) {
             alert("Erro no login com Google: " + error.message);
