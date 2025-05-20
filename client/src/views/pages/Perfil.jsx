@@ -8,10 +8,6 @@ export default function Perfil() {
     const { user, logout, refreshUser } = useAuth();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        refreshUser();
-    }, []);
-
     const handleLogout = async () => {
         try {
             await logout();

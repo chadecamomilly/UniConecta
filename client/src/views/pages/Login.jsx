@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { loginComEmailSenha, loginComGoogle } from "../../controllers/authController";
 import { useAuth } from "../../contexts/AuthContext";
@@ -12,7 +12,7 @@ export default function Login() {
 
     const navigate = useNavigate();
     const { setUser } = useAuth();
-    
+
 
     const handleLoginGoogle = async () => {
         try {
@@ -37,27 +37,35 @@ export default function Login() {
 
             const { user, userData } = await loginComEmailSenha(email, senha);
             setUser({ ...user, ...userData });
-            
+
             // Redirecionar para a página inicial
             navigate("/");
 
         } catch (error) {
             console.error("Erro no login:", error);
             setErro(
-                error.message.includes("wrong-password") 
-                    ? "Senha incorreta" 
-                : error.message.includes("user-not-found") 
-                    ? "Usuário não encontrado" 
-                    : "Erro ao fazer login. Tente novamente."
+                error.message.includes("wrong-password")
+                    ? "Senha incorreta"
+                    : error.message.includes("user-not-found")
+                        ? "Usuário não encontrado"
+                        : "Erro ao fazer login. Tente novamente."
             );
         } finally {
             setLoading(false);
         }
     };
 
+    const { user } = useAuth();
+
+    useEffect(() => {
+        if (user) {
+            navigate("/");
+        }
+    }, [user, navigate]);
+
     return (
         <div className="min-h-screen bg-uniblue flex flex-col items-center justify-center p-4">
-            
+
             <img
                 src={logo}
                 alt="Logo UniConecta"
