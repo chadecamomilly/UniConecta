@@ -106,7 +106,7 @@ export default function Home() {
                                     titulo={pub.getTitulo()}
                                     conteudo={pub.getConteudo()}
                                     autor={pub.getAutor()}
-                                    data={pub.getDataCriacao()}
+                                    
                                     esportes={pub.getEsportes()}
                                     modo="editar"
                                     onSalvar={handleSalvarEdicao}
