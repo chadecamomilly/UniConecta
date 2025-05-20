@@ -12,6 +12,7 @@ export default function Login() {
 
     const navigate = useNavigate();
     const { setUser } = useAuth();
+    
 
     const handleLoginGoogle = async () => {
         try {
