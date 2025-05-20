@@ -2,7 +2,7 @@
   "name": "UniConecta",
   "short_name": "UniConecta",
   "description": "Conecte-se com sua atlética: eventos, treinos, publicações e mais.",
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0A0F2E",
   "theme_color": "#0A0F2E",
