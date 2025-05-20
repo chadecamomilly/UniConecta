@@ -2,11 +2,20 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import FotoPerfil from "../components/FotoPerfil";
 import Cabecalho from "../components/Header";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function Perfil() {
     const { user, logout, refreshUser } = useAuth();
     const navigate = useNavigate();
+    const [refreshed, setRefreshed] = useState(false);
+
+    useEffect(() => {
+        let alreadyRefreshed = false;
+        if (user && (!user.nome || !user.foto) && !alreadyRefreshed) {
+            refreshUser();
+            alreadyRefreshed = true;
+        }
+    }, [user]);
 
     const handleLogout = async () => {
         try {
