@@ -1,101 +1,60 @@
-import { useEffect, useState } from "react";
-import { buscarUsuario, atualizarFotoUsuario, getCurrentUserId } from "../../controllers/userController";
-import Box from "../components/Box";
-import Header from "../components/Header";
+import { useAuth } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import FotoPerfil from "../components/FotoPerfil";
+import Cabecalho from "../components/Header";
+import { useEffect } from "react";
 
 export default function Perfil() {
-    const [usuario, setUsuario] = useState(null);
-    const [novaFoto, setNovaFoto] = useState("");
-    const [carregando, setCarregando] = useState(true);
-    const [erro, setErro] = useState(null);
+    const { user, logout, refreshUser } = useAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const carregarPerfil = async () => {
-            try {
-                const userId = getCurrentUserId();
-                if (userId) {
-                    const dadosUsuario = await buscarUsuario(userId);
-                    setUsuario(dadosUsuario);
-                }
-                setCarregando(false);
-            } catch (error) {
-                setErro("Erro ao carregar perfil");
-                setCarregando(false);
-                console.error(error);
-            }
-        };
-
-        carregarPerfil();
+        refreshUser();
     }, []);
 
-    const handleAtualizarFoto = async () => {
-        if (!novaFoto.trim()) return;
-        
+    const handleLogout = async () => {
         try {
-            const userId = getCurrentUserId();
-            if (!userId) throw new Error("Usuário não autenticado");
-            
-            const fotoAtualizada = await atualizarFotoUsuario(userId, novaFoto);
-            setUsuario(prev => ({ ...prev, foto: fotoAtualizada }));
-            setNovaFoto("");
-            alert("Foto atualizada com sucesso!");
-        } catch (error) {
-            setErro("Erro ao atualizar foto");
-            console.error(error);
+            await logout();
+            navigate("/login");
+        } catch {
+            alert("Erro ao sair. Tente novamente.");
         }
     };
 
-    if (carregando) return <div className="min-h-screen flex flex-col bg-[#0a0e2a] text-white"><Header /><div className="flex-1 flex items-center justify-center">Carregando perfil...</div></div>;
-    if (erro) return <div className="min-h-screen flex flex-col bg-[#0a0e2a] text-white"><Header /><div className="flex-1 flex items-center justify-center text-red-500">{erro}</div></div>;
-    if (!usuario) return <div className="min-h-screen flex flex-col bg-[#0a0e2a] text-white"><Header /><div className="flex-1 flex items-center justify-center">Usuário não encontrado</div></div>;
+    if (!user) {
+        return (
+            <div className="min-h-screen flex flex-col bg-uniblue text-white">
+                <Cabecalho />
+                <div className="flex-grow flex items-center justify-center">
+                    <p>Carregando usuário...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen flex flex-col bg-[#0a0e2a] text-white">
-            <Header />
-            <div className="min-h-screen bg-blue-950 text-white flex flex-col items-center pt-10 px-4">
-                <h1 className="text-2xl font-bold mb-6">Perfil</h1>
-                <Box>
-                    <div className="flex flex-col items-center space-y-4">
-                        {usuario.foto ? (
-                            <img 
-                                src={usuario.foto} 
-                                alt="Foto de perfil" 
-                                className="w-24 h-24 rounded-full object-cover"
-                                onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = "https://via.placeholder.com/150";
-                                }}
-                            />
-                        ) : (
-                            <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
-                                Sem foto
-                            </div>
-                        )}
-                        <div className="text-center">
-                            <p className="text-xl font-semibold">{usuario.nome}</p>
-                            <p className="text-sm text-gray-400">{usuario.email}</p>
-                            <p className="text-sm text-gray-400 capitalize">{usuario.tipo}</p>
-                        </div>
-                        
-                        <div className="w-full space-y-2">
-                            <input
-                                type="url"
-                                className="border rounded p-2 w-full text-gray-800"
-                                placeholder="Cole o link da nova foto"
-                                value={novaFoto}
-                                onChange={(e) => setNovaFoto(e.target.value)}
-                            />
-                            <button
-                                onClick={handleAtualizarFoto}
-                                disabled={!novaFoto.trim()}
-                                className={`w-full py-2 rounded ${novaFoto.trim() ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-500 cursor-not-allowed'} text-white transition-colors`}
-                            >
-                                Atualizar foto
-                            </button>
-                        </div>
-                    </div>
-                </Box>
-            </div>
+        <div className="min-h-screen bg-uniblue text-white flex flex-col">
+            <Cabecalho />
+
+            <main className="flex-grow flex flex-col items-center p-6">
+                <h1 className="text-3xl font-bold mb-6">Perfil</h1>
+
+                <FotoPerfil
+                    photoURL={user.foto}
+                    displayName={user.displayName || user.email}
+                    size={120}
+                />
+
+                <p className="mt-4 text-xl font-semibold">{user.nome || "Usuário"}</p>
+                <p className="text-gray-300">{user.email}</p>
+
+                <button
+                    onClick={handleLogout}
+                    className="mt-8 bg-red-600 hover:bg-red-700 transition px-6 py-2 rounded-lg font-semibold"
+                >
+                    Sair
+                </button>
+            </main>
         </div>
     );
 }

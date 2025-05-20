@@ -1,11 +1,11 @@
 import ModelError from "./ModelError.js";
 
 export default class Usuario {
-  constructor(id, nome, email, tipo, esportes) {
+  constructor(id, nome, email, perfil, esportes = []) {
     this.setId(id);
     this.setNome(nome);
     this.setEmail(email);
-    this.setTipo(tipo);
+    this.setTipo(perfil);
     this.setEsportes(esportes);
   }
 
@@ -68,13 +68,13 @@ export default class Usuario {
 
   static validarEmail(email) {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!regex.test(email)) {
+    if (!email || !regex.test(email.trim())) {
       throw new ModelError("E-mail inválido.");
     }
-  }
+}
 
   static validarTipo(tipo) {
-    const tiposValidos = ["admin", "atleta", "responsavel"];
+    const tiposValidos = ["aluno", "responsavel"];
     if (!tiposValidos.includes(tipo)) {
       throw new ModelError(`Tipo inválido: use ${tiposValidos.join(" ou ")}.`);
     }

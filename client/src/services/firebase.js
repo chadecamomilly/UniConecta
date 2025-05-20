@@ -1,9 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
-// 
-// Configuração do projeto no firebase
-//
+
 const firebaseConfig = {
   apiKey: "AIzaSyCWjcbC99DqzcY_v8KDrEtqKKEt5LoFsoA",
   authDomain: "camomilly-lasalle-firebase.firebaseapp.com",
@@ -15,12 +13,10 @@ const firebaseConfig = {
   measurementId: "G-5DT18D8PFP"
 };
 
-// Chama a função initializeApp do firebase (ver o import acima)
-let app = initializeApp(firebaseConfig);
-export const db = getDatabase(app);
+// Inicializa apenas uma vez
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getDatabase(app);
 
-
-// Retorna o objeto app gerado pelo firebase
+export { auth, db };
 export default app;
-export { auth };

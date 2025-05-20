@@ -1,49 +1,99 @@
-import { 
-  getAuth, 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword,
-  signInWithPopup, 
-  GoogleAuthProvider 
-} from "firebase/auth";
-import { getDatabase, ref, get } from "firebase/database";
 import app from "../services/firebase";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  sendEmailVerification,
+  browserSessionPersistence,
+  sendPasswordResetEmail,
+  updateProfile,
+} from "firebase/auth";
+import { getDatabase, ref, set, get } from "firebase/database";
 
 const auth = getAuth(app);
+auth.setPersistence(browserSessionPersistence);
+
 const db = getDatabase(app);
-const provider = new GoogleAuthProvider();
+const googleProvider = new GoogleAuthProvider();
 
-export async function registrarUsuarioComEmail(email, senha) {
-  try {
-    const credenciais = await createUserWithEmailAndPassword(auth, email, senha);
-    return credenciais.user;
-  } catch (error) {
-    throw new Error(error.message);
-  }
+// Salvar no banco
+async function salvarUsuario(uid, nome, email, perfil = "aluno", foto = "") {
+  // salva em /usuarios
+  await set(ref(db, `usuarios/${uid}`), {
+    nome,
+    email,
+    perfil,
+  });
+
+  // salva em /alunos
+  await set(ref(db, `alunos/${uid}`), {
+    nome,
+    foto,
+    esportes: [],
+  });
 }
 
-export async function loginComEmailESenha(email, senha) {
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, senha);
-    const uid = userCredential.user.uid;
-    
-    const userRef = ref(db, "usuarios/" + uid);
-    const snapshot = await get(userRef);
-    
-    if (!snapshot.exists()) {
-      throw new Error("Usuário não encontrado no banco de dados.");
-    }
-    
-    return { user: userCredential.user, userData: snapshot.val() };
-  } catch (error) {
-    throw new Error(error.message);
+// Login com email e senha
+export async function loginComEmailSenha(email, senha) {
+  if (!email || !senha) throw new Error("Email e senha são obrigatórios");
+
+  const cred = await signInWithEmailAndPassword(auth, email, senha);
+  const user = cred.user;
+
+  if (!user.emailVerified) {
+    throw new Error("Email não verificado");
   }
+
+  return user;
 }
 
+// Cadastro com email e senha
+export async function cadastrarComEmailSenha(email, senha, nome) {
+  if (!email || !senha || !nome)
+    throw new Error("Todos os campos são obrigatórios");
+
+  const cred = await createUserWithEmailAndPassword(auth, email, senha);
+  const user = cred.user;
+
+  await updateProfile(user, {
+    displayName: nome
+  });
+
+  await user.reload();
+
+  await sendEmailVerification(user);
+
+  await salvarUsuario(user.uid, nome, email);
+
+  return cred;
+}
+
+// Login com Google
 export async function loginComGoogle() {
-  try {
-    const resultado = await signInWithPopup(auth, provider);
-    return resultado.user;
-  } catch (error) {
-    throw new Error(error.message);
+  const result = await signInWithPopup(auth, googleProvider);
+  const user = result.user;
+
+  // Verifica se já existe em /usuarios
+  const refUsuario = ref(db, `usuarios/${user.uid}`);
+  const snapshot = await get(refUsuario);
+
+  if (!snapshot.exists()) {
+    await salvarUsuario(user.uid, user.displayName, user.email, "aluno", user.photoURL || "");
   }
+
+  return user;
+}
+
+// Redefinição de senha
+export const enviarEmailRedefinicaoSenha = async (email) => {
+  const auth = getAuth();
+  await sendPasswordResetEmail(auth, email);
+};
+
+
+// Logout
+export async function logout() {
+  await auth.signOut();
 }
