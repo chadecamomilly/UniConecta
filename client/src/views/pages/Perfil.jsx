@@ -2,18 +2,17 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import FotoPerfil from "../components/FotoPerfil";
 import Cabecalho from "../components/Header";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export default function Perfil() {
     const { user, logout, refreshUser } = useAuth();
     const navigate = useNavigate();
-    const [refreshed, setRefreshed] = useState(false);
+    const hasRefreshed = useRef(false);
 
     useEffect(() => {
-        let alreadyRefreshed = false;
-        if (user && (!user.nome || !user.foto) && !alreadyRefreshed) {
+        if (user && (!user.nome || !user.foto) && !hasRefreshed.current) {
+            hasRefreshed.current = true;
             refreshUser();
-            alreadyRefreshed = true;
         }
     }, [user]);
 
@@ -40,13 +39,12 @@ export default function Perfil() {
     return (
         <div className="min-h-screen bg-uniblue text-white flex flex-col">
             <Cabecalho />
-
             <main className="flex-grow flex flex-col items-center p-6">
                 <h1 className="text-3xl font-bold mb-6">Perfil</h1>
 
                 <FotoPerfil
                     photoURL={user.foto}
-                    displayName={user.displayName || user.email}
+                    displayName={user.nome || user.email}
                     size={120}
                 />
 
