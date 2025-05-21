@@ -12,7 +12,6 @@ export default function Perfil() {
     useEffect(() => {
         if (user && (!user.nome || !user.foto) && !hasRefreshed.current) {
             hasRefreshed.current = true;
-            refreshUser();
         }
     }, [user]);
 
